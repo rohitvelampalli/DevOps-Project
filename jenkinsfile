@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    environment {
+        SONAR_HOST_URL = 'http://sonarqube:9000'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/spring-projects/spring-petclinic', branch: 'main'
+            }
+        }
+        stage('Clean') {
+            steps {
+                sh 'rm -rf .scannerwork' // Remove SonarQube scanner work directory
+                sh 'mvn clean' // Clean the project
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn install' // Compile and package the project
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                sh "mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.projectKey=petclinic -Dsonar.login=admin -Dsonar.password=root -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java"
+            }
+        }
+        stage('Archive Artifact') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Build succeeded."
+        }
+        failure {
+            echo "Build failed."
+        }
+        always {
+            echo "Pipeline completed."
+        }
+    }
+}
