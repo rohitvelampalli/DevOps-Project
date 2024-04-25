@@ -35,7 +35,7 @@ pipeline {
 		stage('Deploy to Production') {
             steps {
                 sshagent(['prod-ssh-id']) {
-                    sh 'ansible-playbook ansible/playbook.yml -i ansible/inventory.ini -vvv'
+                    sh 'ansible-playbook /ansible/playbook.yml -i /ansible/inventory.ini -vvv'
                 }
             }
         }
